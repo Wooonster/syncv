@@ -1,0 +1,6 @@
+syncv.egg-info/
+venv/
+venv2/
+test/
+notes.txt
+syncv/__pycache__
