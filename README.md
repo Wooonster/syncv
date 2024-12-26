@@ -14,7 +14,7 @@
 
 ---
 
-## Installation
+## Installation (Not yet..)
 
 Install SyncV using pip:
 
