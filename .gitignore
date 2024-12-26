@@ -4,3 +4,4 @@ venv2/
 test/
 notes.txt
 syncv/__pycache__
+dist/
