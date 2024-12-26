@@ -48,7 +48,7 @@ def start_service():
     start_clipboard_monitor(unique_code)
 
     # 启动键盘快捷键
-    setup_hotkeys()
+    setup_hotkeys(unique_code)
 
     # 启动设备发现（如果实现）
     # 可以在此处添加自动发现或其他功能
