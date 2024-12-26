@@ -3,12 +3,16 @@
 import uuid
 import threading
 import time
-from syncv.storage import load_log, save_log, clear_log
-from syncv.network import bind_device_network, send_clipboard, start_server
+from syncv.storage import load_log, save_log, clear_log, get_peers
+from syncv.network import bind_device_network, send_clipboard_content, start_server
 from syncv.clipboard import start_clipboard_monitor
 from syncv.keyboard_shortcuts import setup_hotkeys
 
 def initialize():
+    code = load_log('config').get('unique_code')
+    if code:
+        return f'Already initialized. Your unique code is: {code}'
+
     unique_code = str(uuid.uuid4())
     # 保存唯一代码到本地配置
     save_log('config', {'unique_code': unique_code})
@@ -22,6 +26,9 @@ def bind_device(code):
         # 如果本地没有初始化，不能绑定
         return False
     return bind_device_network(code, unique_code)
+
+def get_binded_peers():
+    return get_peers()
 
 def list_contents():
     log = load_log('clipboard')

@@ -1,7 +1,7 @@
 import json
 import os
 
-LOG_DIR = os.path.expanduser('~/.sync_logs')
+LOG_DIR = os.path.expanduser('~/.syncv_logs')
 # LOG_DIR = './logs'
 
 def get_log_path(name):

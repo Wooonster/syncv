@@ -1,5 +1,5 @@
 import click
-from syncv.core import initialize, list_contents, clear_contents, bind_device, start_service
+from syncv.core import initialize, list_contents, clear_contents, bind_device, start_service, get_binded_peers
 
 @click.group()
 def main():
@@ -10,7 +10,10 @@ def main():
 def init():
     """ init """
     code = initialize()
-    click.echo(f'Initilization complete. Your unique code is: {code}')
+    if code.startswith('Already'):
+        click.echo(code)
+    else:
+        click.echo(f'Initilization complete. Your unique code is: {code}')
 
 @main.command()
 @click.argument('code')
@@ -21,6 +24,13 @@ def bind(code):
         click.echo('OS binded')
     else:
         click.echo('Failed to bind')
+
+@main.command()
+def binded_list():
+    """ list binded """
+    peers = get_binded_peers()
+    for idx, peer in enumerate(peers):
+        click.echo(f'{idx}: {peer}')
 
 @main.command
 def start():
