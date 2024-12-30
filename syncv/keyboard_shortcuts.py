@@ -1,7 +1,14 @@
 import os
 import sys
+import threading
 import pyperclip
-from pynput import keyboard
+import platform
+
+try:
+    from pynput import keyboard  # Import for GUI environments
+except ImportError:
+    keyboard = None  # Fallback if GUI dependencies are not available
+
 from syncv.network import send_clipboard_content
 
 
@@ -10,16 +17,23 @@ def is_headless():
     return os.environ.get("DISPLAY") is None and os.environ.get("WAYLAND_DISPLAY") is None
 
 
-def on_copy(code):
+def get_os():
+    """Return the current operating system."""
+    return platform.system().lower()
+
+
+def on_copy(unique_code):
+    """Handle copy action."""
     try:
         contents = pyperclip.paste()
-        send_clipboard_content(code, contents)
+        send_clipboard_content(unique_code, contents)
         print(f"Copied: {contents}")
     except Exception as e:
         print(f"Error in on_copy: {e}")
 
 
 def on_paste():
+    """Handle paste action."""
     try:
         # Simulate paste operation
         print("Paste triggered.")
@@ -29,9 +43,9 @@ def on_paste():
 
 
 def monitor_clipboard(unique_code):
-    """Poll clipboard changes for headless environments."""
+    """Poll clipboard changes in headless environments."""
     previous_content = pyperclip.paste()
-    print("Starting clipboard monitor for headless environment...")
+    print("Starting clipboard monitor for all environments...")
     while True:
         try:
             current_content = pyperclip.paste()
@@ -44,39 +58,40 @@ def monitor_clipboard(unique_code):
 
 
 def on_press(key, unique_code):
-    """Handle key press in GUI environments."""
+    """Handle key press for GUI environments."""
     try:
-        if key == keyboard.Key.cmd:
-            # Pressed command key; wait for 'c' or 'v'
-            print("Command key pressed.")
+        if hasattr(key, 'char') and key.char in ('c', 'v'):
+            if key.char == 'c':
+                on_copy(unique_code)
+            elif key.char == 'v':
+                on_paste()
     except Exception as e:
         print(f"Error in on_press: {e}")
 
 
-def on_release(key, unique_code):
-    """Handle key release in GUI environments."""
-    try:
-        if key == keyboard.KeyCode.from_char('c'):
-            on_copy(unique_code)
-        elif key == keyboard.KeyCode.from_char('v'):
-            on_paste()
-        return False  # Stop listener after handling
-    except Exception as e:
-        print(f"Error in on_release: {e}")
-
-
 def setup_hotkeys(unique_code):
-    """Setup hotkeys or clipboard monitoring based on the environment."""
+    """Setup hotkeys or clipboard monitoring for all environments."""
+    os_name = get_os()
+    print(f"Detected OS: {os_name}")
+
+    # Fallback for headless environments
     if is_headless():
-        # In headless environments, monitor clipboard instead of listening to hotkeys
-        print("Headless mode detected: Using clipboard monitoring.")
+        print("Headless mode detected. Using clipboard monitoring.")
         monitor_clipboard(unique_code)
-    else:
-        # GUI environment: Set up hotkeys
-        print("GUI environment detected: Setting up hotkeys.")
+        return
+
+    # GUI Environment: Hotkey setup
+    if keyboard:
+        print("GUI environment detected. Setting up hotkeys.")
         try:
-            with keyboard.Listener(on_press=lambda k: on_press(k, unique_code),
-                                   on_release=lambda k: on_release(k, unique_code)) as listener:
+            def on_key_release(key):
+                on_press(key, unique_code)
+
+            with keyboard.Listener(on_release=on_key_release) as listener:
                 listener.join()
         except Exception as e:
             print(f"Error setting up hotkeys: {e}")
+    else:
+        # Headless fallback even in GUI OS if `pynput` is unavailable
+        print("Fallback to clipboard monitoring due to missing GUI dependencies.")
+        monitor_clipboard(unique_code)

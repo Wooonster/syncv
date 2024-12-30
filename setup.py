@@ -2,14 +2,15 @@ from setuptools import setup, find_packages
 
 setup(
     name='syncv',
-    version='0.1.1',
+    version='0.1.2',
     packages=find_packages(),
     install_requires=[
         'click',
         'pyperclip',
         'keyboard',
         'requests',
-        'flask',  # 用于简单的服务器通信
+        'flask',
+        'pynput'
     ],
     entry_points={
         'console_scripts': [

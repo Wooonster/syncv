@@ -6,3 +6,4 @@ notes.txt
 syncv/__pycache__
 dist/
 .setup.py
+build/
