@@ -5,3 +5,4 @@ test/
 notes.txt
 syncv/__pycache__
 dist/
+.setup.py
